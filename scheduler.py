@@ -95,12 +95,12 @@ def SMO(queue, tact_size, number_of_tasks, type_smo):
                     Statistic['average_wait_in_system'] += time - real_time_queue[0].time - real_time_queue[0].solution_time
                     Statistic['solved_tasks'] += 1
                     del real_time_queue[0]
-                    in_processor = 0
+                    in_processor[counter % n_processors] = 0
             #calculate in the new tact
             else:
                 if real_time_queue[0].solution_time > tact_size:
                     real_time_queue[0].solution_time -= tact_size
-                    in_processor = 1
+                    in_processor[counter % n_processors] = 1
                     remained_time = 0
                     time += tact_size
                 else:
@@ -108,7 +108,7 @@ def SMO(queue, tact_size, number_of_tasks, type_smo):
                     Statistic['average_wait_in_system'] += time - real_time_queue[0].time - real_time_queue[0].solution_time
                     Statistic['solved_tasks'] += 1
                     remained_time = tact_size - real_time_queue[0].solution_time
-                    in_processor = 0
+                    in_processor[counter % n_processors] = 0
                     del real_time_queue[0]
             counter++
         #if real queue is empty add remained time and start next tact
