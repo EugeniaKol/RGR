@@ -6,6 +6,7 @@ avg_solution_time1 = (0.0020012855529785156 + 0.052039384841918945)/2
 avg_solution_time2 = (0.02399897575378418 + 0.16211581230163574)/2
 first_range = (0.0020012855529785156, 0.052039384841918945)
 second_range = (0.02399897575378418, 0.16211581230163574)
+counter = 0
 
 class Task:
     def __init__(self, t, s_t, d):
@@ -35,12 +36,22 @@ def SMO(queue, tact_size, number_of_tasks, type_smo):
     'skiped_tasks' : []}
     real_time_queue = []
     time = 0
-    in_processor = 0
+   
     remained_time = 0
+    #example number of processors
+    n_processors = 4
+    in_processor = [0] * n_processors
+    
 
     while True:
         #delete overdue tasks
-        if in_processor == 0:
+        empty = true
+        for i in in_processor:
+            if i != 0:
+                empty = false
+                break
+        
+        if empty == true:
             before = len(real_time_queue)
             real_time_queue = [i for i in real_time_queue if i.deadline > time]
             after = len(real_time_queue)
@@ -58,6 +69,12 @@ def SMO(queue, tact_size, number_of_tasks, type_smo):
             Statistic['average_queue_length'].append(len(real_time_queue))
 
         #if processor is empty - choose the shortest
+        empty = true
+        for i in in_processor:
+            if i != 0:
+                empty = false
+                break
+        
         if in_processor == 0:
             if type_smo == 'RM':
                 real_time_queue.sort(key=lambda x: x.solution_time)
@@ -70,7 +87,7 @@ def SMO(queue, tact_size, number_of_tasks, type_smo):
                 if real_time_queue[0].solution_time > remained_time:
                     time += remained_time
                     real_time_queue[0].solution_time -= remained_time
-                    in_processor = 1
+                    in_processor[counter % n_processors] = 1
                     remained_time = 0
                 else:
                     remained_time -= real_time_queue[0].solution_time
@@ -93,6 +110,7 @@ def SMO(queue, tact_size, number_of_tasks, type_smo):
                     remained_time = tact_size - real_time_queue[0].solution_time
                     in_processor = 0
                     del real_time_queue[0]
+            counter++
         #if real queue is empty add remained time and start next tact
         else:
             if remained_time != 0:
@@ -121,7 +139,7 @@ def Execute(lambda_p, size, avg_sol_time, range1, tact_size, type_smo):
     return Stats
 
 def CreateGraph(type_smo, tact_size,avg_solution_time,second_range, color):
-    n=3
+    n = 3
     wait_time, queue_length, free_time = [], [], []
     for i in numpy.linspace(0.1, 10):
         one_smo = Execute(i, 100, avg_solution_time, second_range, tact_size, type_smo)
@@ -163,5 +181,5 @@ def CreateGraph(type_smo, tact_size,avg_solution_time,second_range, color):
     plt.show()
 
 
-CreateGraph('RM', 1,avg_solution_time1,first_range, '#FF6289')
-CreateGraph('EDF', 1,avg_solution_time2,second_range, '#FF084a')
+CreateGraph('RM', 1, avg_solution_time1,first_range, '#FF6289')
+CreateGraph('EDF', 1, avg_solution_time2,second_range, '#FF084a')
